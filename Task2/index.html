@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Data Table</title>
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#searchInput {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+#dataTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+#dataTable th, #dataTable td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+#dataTable th {
+    background-color: #f4f4f9;
+}
+
+#dataTable th.sorted-asc::after {
+    content: " \25B2";
+}
+
+#dataTable th.sorted-desc::after {
+    content: " \25BC";
+}
+
+
+
+.pagination {
+    text-align: center;
+}
+
+.pagination button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    margin: 0 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.pagination button:hover {
+    background-color: #0056b3;
+}
+
+.pagination button.active {
+    background-color: #0056b3;
+}
+
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Interactive Data Table</h2>
+        <input type="text" id="searchInput" placeholder="Search...">
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th data-column="name">Name</th>
+                    <th data-column="position">Position</th>
+                    <th data-column="office">Office</th>
+                    <th data-column="age">Age</th>
+                    <th data-column="start_date">Start Date</th>
+                    <th data-column="salary">Salary</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data rows will be populated here -->
+            </tbody>
+        </table>
+        <div class="pagination" id="pagination"></div>
+    </div>
+
+    <script>
+        // Sample JSON data
+        
+        const jsonData = [
+    { "name": "Hiroshi Tanaka", "position": "Architect", "office": "Tokyo", "age": "61", "start_date": "2011-04-25", "salary": "¥35,000,000" },
+    { "name": "Takashi Yamada", "position": "Accountant", "office": "Osaka", "age": "63", "start_date": "2011-07-25", "salary": "¥18,000,000" },
+    { "name": "Akira Suzuki", "position": "Author", "office": "Kyoto", "age": "66", "start_date": "2009-01-12", "salary": "¥9,000,000" },
+    { "name": "Kenji Yamamoto", "position": "Developer", "office": "Tokyo", "age": "22", "start_date": "2012-03-29", "salary": "¥45,000,000" },
+    { "name": "Hiroshi Tanaka", "position": "Architect", "office": "Tokyo", "age": "61", "start_date": "2011-04-25", "salary": "¥35,000,000" },
+    { "name": "Takashi Yamada", "position": "Accountant", "office": "Osaka", "age": "63", "start_date": "2011-07-25", "salary": "¥18,000,000" },
+    { "name": "Akira Suzuki", "position": "Author", "office": "Kyoto", "age": "66", "start_date": "2009-01-12", "salary": "¥9,000,000" },
+    { "name": "Kenji Yamamoto", "position": "Developer", "office": "Tokyo", "age": "22", "start_date": "2012-03-29", "salary": "¥45,000,000" },
+    
+
+        ];
+        let currentPage = 1;
+        const rowsPerPage = 7;
+        let filteredData = [...jsonData];
+        function renderTable(data) {
+            const tableBody = document.querySelector('#dataTable tbody');
+            tableBody.innerHTML = '';
+
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedData = data.slice(start, end);
+
+            paginatedData.forEach(row => {
+                const tr = document.createElement('tr');
+                for (const key in row) {
+                    const td = document.createElement('td');
+                    td.textContent = row[key];
+                    tr.appendChild(td);
+                }
+                tableBody.appendChild(tr);
+            });
+        }
+        function renderPagination(data) {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+
+            const pageCount = Math.ceil(data.length / rowsPerPage);
+            for (let i = 1; i <= pageCount; i++) {
+                const button = document.createElement('button');
+                button.textContent = i;
+                button.className = i === currentPage ? 'active' : '';
+                button.addEventListener('click', () => {
+                    currentPage = i;
+                    renderTable(data);
+                    renderPagination(data);
+                });
+                pagination.appendChild(button);
+            }
+        }
+        function sorting(column, order) {
+            filteredData.sort((a, b) => {
+                if (a[column] < b[column]) return order === 'asc' ? -1 : 1;
+                if (a[column] > b[column]) return order === 'asc' ? 1 : -1;
+                return 0;
+            });
+            renderTable(filteredData);
+            renderPagination(filteredData);
+        }
+        function handleSearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            filteredData = jsonData.filter(item => {
+                return Object.values(item).some(value =>
+                    value.toString().toLowerCase().includes(searchTerm)
+                );
+            });
+            currentPage = 1;
+            renderTable(filteredData);
+            renderPagination(filteredData);
+        }
+        document.querySelectorAll('#dataTable th').forEach(header => {
+            header.addEventListener('click', () => {
+                const column = header.getAttribute('data-column');
+                const order = header.classList.contains('sorted-asc') ? 'desc' : 'asc';
+
+                document.querySelectorAll('#dataTable th').forEach(th => th.classList.remove('sorted-asc', 'sorted-desc'));
+                header.classList.add(order === 'asc' ? 'sorted-asc' : 'sorted-desc');
+
+                sorting(column, order);
+            });
+        });
+        document.getElementById('searchInput').addEventListener('input', handleSearch);
+
+        renderTable(filteredData);
+        renderPagination(filteredData);
+    </script>
+
+</body>
+
+</html>
