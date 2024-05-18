@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Form Builder</title>
+    <style>
+        .form-field {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Form Builder</h1>
+    <div id="form-container">
+        <form id="dynamic-form">
+
+        </form>
+    </div>
+    <button id="add-text">Add Text Input</button>
+    <button id="add-checkbox">Add Checkbox</button>
+    <button id="add-radio">Add Radio Button</button>
+    <button id="remove-last">Remove Last Field</button>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('dynamic-form');
+            const buttons = {
+                'add-text': addField.bind(null, 'text'),
+                'add-checkbox': addField.bind(null, 'checkbox'),
+                'add-radio': addField.bind(null, 'radio'),
+                'remove-last': removeLastField
+            };
+
+            let fieldCount = 0;
+
+            Object.keys(buttons).forEach(id => {
+                const button = document.getElementById(id);
+                button.addEventListener('click', buttons[id]);
+            });
+
+            function addField(type) {
+                fieldCount++;
+                const fieldWrapper = createFieldWrapper(fieldCount);
+                const newField = createField(type, fieldCount);
+
+                fieldWrapper.appendChild(newField);
+                form.appendChild(fieldWrapper);
+            }
+
+            function removeLastField() {
+                if (form.lastChild) {
+                    form.removeChild(form.lastChild);
+                }
+            }
+        });
+
+        function createFieldWrapper(fieldCount) {
+            const fieldWrapper = document.createElement('div');
+            fieldWrapper.className = 'form-field';
+            fieldWrapper.id = `field - ${fieldCount}`;
+            return fieldWrapper;
+        }
+
+        function createField(type, fieldCount) {
+            const newField = document.createElement('input');
+            newField.name = `${type} - ${fieldCount}`;
+
+            switch (type) {
+                case 'text':
+                    newField.type = 'text';
+                    newField.placeholder = `Text Input ${fieldCount}`;
+                    break;
+                case 'checkbox':
+                    newField.type = 'checkbox';
+                    newField.appendChild(document.createTextNode(` Checkbox ${fieldCount} `));
+                    break;
+                case 'radio':
+                    newField.type = 'radio';
+                    newField.value = `radio - ${fieldCount}`;
+                    newField.appendChild(document.createTextNode(` Radio Button ${fieldCount} `));
+                    break;
+            }
+
+            return newField;
+        }
+
+    </script>
+</body>
+
+</html>
